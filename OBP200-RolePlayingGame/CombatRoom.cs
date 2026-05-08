@@ -6,7 +6,7 @@ namespace OBP200_RolePlayingGame;
 
 public class CombatRoom : Room
 {
-    public Enemy RoomEnemy { get; set;}
+    public Enemy RoomEnemy { get; set; }
 
     public CombatRoom(string name, string description, Enemy enemy) : base(name, description)
     {
@@ -42,7 +42,7 @@ public class CombatRoom : Room
             switch (choice)
             {
                 case "A":
-                    int damageToEnemy = Math.Max(1, player.ATK - RoomEnemy.DEF);
+                    int damageToEnemy = player.CalculateBasicAttackDamage(RoomEnemy);
                     RoomEnemy.HP -= damageToEnemy;
                     Console.WriteLine($"Du slog {RoomEnemy.Name} för {damageToEnemy} skada.");
                     break;
@@ -79,11 +79,15 @@ public class CombatRoom : Room
                     continue;
             }
 
-            if (RoomEnemy.HP > 0 && choice != "P")
+            if (RoomEnemy.HP > 0)
             {
                 Random rng = new Random();
                 int roll = rng.Next(0, 3);
                 int damageFromEnemy = Math.Max(1, RoomEnemy.ATK - (player.DEF/2)) + roll;
+                if (rng.NextDouble() < 0.1)
+                {
+                    damageFromEnemy = Math.Max(1, damageFromEnemy - 2);
+                }
                 player.HP -= damageFromEnemy;
                 Console.WriteLine($"{RoomEnemy.Name} anfaller och gör {damageFromEnemy} skada!");
             }
@@ -94,6 +98,13 @@ public class CombatRoom : Room
             Console.WriteLine($"Seger! +{RoomEnemy.XPReward} XP, +{RoomEnemy.GoldReward} guld.");
             player.Gold += RoomEnemy.GoldReward;
             player.GainXP(RoomEnemy.XPReward);
+
+            if (new Random().NextDouble() < 0.35)
+            {
+                string drop = RoomEnemy.Name == "Urdraken" ? "Dragon Scale" : "Minor Gem";
+                player.Inventory.Add(new Item(drop));
+                Console.WriteLine($"Föremål hittat: {drop} (lagt i din väska)");
+            }
         }
         else
         {

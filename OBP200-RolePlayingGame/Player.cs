@@ -4,12 +4,12 @@ namespace OBP200_RolePlayingGame;
 
 public class Player : GameCharacter
 {
-    public string ClassName {get; set;}
+    public string ClassName { get; private set; }
     public int Gold { get; set; }
-    public int XP {get; set;}
-    public int Level {get; set;}
-    public int Potions {get; set;}
-    public List <Item> Inventory {get; set;}
+    public int XP { get; private set; }
+    public int Level { get; private set; }
+    public int Potions { get; set; }
+    public List <Item> Inventory { get; set; }
 
     public Player(string name, string className, int hp, int atk, int def, int gold, int potions) : base(name, hp, atk, def)
     {
@@ -116,7 +116,7 @@ public class Player : GameCharacter
         int specialDmg = 0;
         if (ClassName == "Warrior")
         {
-            Console.WriteLine("Warrior använder Kraftslag!");
+            Console.WriteLine("Warrior använder Heavy Strike!");
             specialDmg = Math.Max(2, ATK + 3 - target.DEF);
             HP -= 2;
             Console.WriteLine("Du tar 2 skada av ansträngningen!");
@@ -125,13 +125,13 @@ public class Player : GameCharacter
         {
             if (Gold >= 3)
             {
-                Console.WriteLine("Mage kastar Eldboll!");
+                Console.WriteLine("Mage kastar Fireball!");
                 Gold -= 3;
                 specialDmg = Math.Max(3, ATK + 5 - (target.DEF/2));
             }
             else
             {
-                Console.WriteLine("Inte tillräckligt med guld för att kasta Eldboll (kostar 3).");
+                Console.WriteLine("Inte tillräckligt med guld för att kasta Fireball (kostar 3).");
                 return 0;
             }
         }
@@ -148,6 +148,36 @@ public class Player : GameCharacter
                 specialDmg = 1;
             }
         }
+        if (target.Name == "Urdraken")
+        {
+            specialDmg = (int)Math.Round(specialDmg * 0.8);
+        }
         return specialDmg;
+    }
+
+    public int CalculateBasicAttackDamage(Enemy target)
+    {
+        var random = new Random();
+        int baseDmg = Math.Max(1, ATK - (target.DEF / 2));
+        int roll = random.Next(0, 3);
+
+        if (ClassName == "Warrior")
+        {
+            baseDmg += 1;
+        }
+        else if (ClassName == "Mage")
+        {
+            baseDmg += 2;
+        }
+        else if (ClassName == "Rogue")
+        {
+            if (random.NextDouble() < 0.2)
+            {
+                baseDmg += 4;
+                Console.WriteLine("Kritisk träff!");
+            }
+        }
+
+        return Math.Max(1, baseDmg + roll);
     }
 }
